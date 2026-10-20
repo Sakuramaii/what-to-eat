@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f7f5">
+  <meta name="description" content="和 AI 聊聊，找到适合你的一餐。">
+  <title>今天吃什么 · 用餐助手</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+ <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+ <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7L12 3ZM20 2v4m-2-2h4"/></symbol>
+ <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+ <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="14" cy="4" r="2"/><path d="m7 22 4-7 3 3v4M3 12l5-2 3-4 3 5 5 2M11 7l-1 7 6 2"/></symbol>
+ <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.8a5.4 5.4 0 0 0 0-7.6Z"/></symbol>
+ <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7m2-4v5l3 2"/></symbol>
+ <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 3C9 2 2 7 5 15s16 7 15-12ZM4 21 16 9"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+ <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+ <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6.3 6.3A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.7 5.7"/></symbol>
+ <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v2"/></symbol>
+ <symbol id="i-bowl" viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 0 1-18 0ZM8 20h8M8 7c-2-2 2-2 0-4m5 4c-2-2 2-2 0-4m5 4c-2-2 2-2 0-4"/></symbol>
+ <symbol id="i-pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z"/><circle cx="12" cy="10" r="2"/></symbol>
+ <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m1-17a3 3 0 0 1 0 6m3 11v-3a6 6 0 0 0-3-5"/></symbol>
+ <symbol id="i-menu" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8m-8 4h4"/></symbol>
+</svg>
+<div class="app-shell">
+  <aside id="left-sidebar" class="sidebar left-sidebar" aria-label="用餐条件与记忆">
+    <header class="sidebar-header">
+      <a class="brand" href="/"><svg class="icon"><use href="#i-bowl"/></svg><span>今天吃什么<span class="brand-dot">.</span></span></a>
+      <button class="icon-button mobile-close" data-panel-close aria-label="关闭侧栏"><svg class="icon"><use href="#i-close"/></svg></button>
+    </header>
+    <div class="sidebar-scroll">
+      <button id="new-chat" class="new-chat-button" type="button" title="上一餐标记为已完成，清空聊天与条件，开始新一餐；保留历史与偏好"><span>＋</span> 新对话<svg class="icon"><use href="#i-arrow"/></svg></button>
+      <section class="side-section">
+        <div class="side-section-heading"><h2>本次用餐</h2><span class="small-label">随时可改</span></div>
+        <div id="needs-summary" class="needs-summary"></div>
+        <div id="condition-tags" class="condition-tags"></div>
+        <details id="inferred-conditions" class="inferred-conditions" hidden><summary id="inferred-summary"></summary><div id="inferred-reasons"></div><p>已用于本次推荐，可直接修改条件。</p></details>
+        <details id="needs-settings" class="needs-settings">
+          <summary>调整用餐条件 <span>⌄</span></summary>
+          <form id="needs-form">
+            <fieldset id="needs-fields">
+              <legend class="sr-only">用餐条件</legend>
+              <div class="scene-tabs" role="group" aria-label="用餐场景">
+                <button type="button" class="scene-tab selected" data-scene="canteen" aria-pressed="true">食堂</button>
+                <button type="button" class="scene-tab" data-scene="outside" aria-pressed="false">校外</button>
+                <button type="button" class="scene-tab" data-scene="menu" aria-pressed="false">点菜单</button>
+              </div>
+              <div id="venue-field" class="field" hidden><label for="venue-select">选择餐厅</label><select id="venue-select"></select></div>
+              <div class="field-pair">
+                <div class="field"><label for="budget">人均预算 / 元</label><input id="budget" type="number" min="1" max="500" step="0.01" placeholder="未设上限"><div class="range-control"><input id="budget-slider" class="condition-slider" type="range" min="0" max="100" step="1" value="0" data-condition="budget" aria-label="拖动调整人均预算，0 表示未设置"><output id="budget-slider-value" for="budget-slider">未设置</output></div></div>
+                <div class="field"><label id="minutes-label" for="minutes">可用时间参考 / 分钟</label><input id="minutes" type="number" min="1" max="240" placeholder="未设上限"><div class="range-control"><input id="minutes-slider" class="condition-slider" type="range" min="0" max="120" step="1" value="0" data-condition="minutes" aria-label="拖动调整可用时间，0 表示未设置"><output id="minutes-slider-value" for="minutes-slider">未设置</output></div></div>
+              </div>
+              <div class="field"><label for="people">用餐人数</label><input id="people" type="number" min="1" max="12" placeholder="未说明"><div class="range-control"><input id="people-slider" class="condition-slider" type="range" min="0" max="12" step="1" value="0" data-condition="people" aria-label="拖动调整用餐人数，0 表示未设置"><output id="people-slider-value" for="people-slider">未设置</output></div></div>
+              <div class="field-pair"><div class="field"><label for="portion-goal">这次想吃多少</label><select id="portion-goal"><option>不限</option><option>少一些</option><option>适中</option><option>吃饱</option></select></div><div class="field"><label for="pace-goal">用餐节奏</label><select id="pace-goal"><option>不限</option><option>慢慢吃</option><option>正常</option><option>快点吃</option></select></div></div>
+              <div class="field"><label for="foods">想吃的餐品 / 品类</label><input id="foods" placeholder="如：面、米粉；多个任选其一" maxlength="300"></div>
+              <div class="field"><label for="avoid-foods">这次不想吃</label><input id="avoid-foods" placeholder="如：炒饭、香锅" maxlength="300"></div>
+              <div class="field"><span id="taste-label" class="field-label">口味偏好</span><div id="taste-options" class="taste-options" role="group" aria-labelledby="taste-label"></div></div>
+              <div class="field"><label for="avoid">忌口食材</label><input id="avoid" placeholder="如：香菜、花生、辣椒" maxlength="300"></div>
+              <div class="field"><label for="purpose">用餐目的</label><select id="purpose"></select></div>
+              <p class="field-hint">聊天会自动同步条件；模糊表达会推测并标注，未提及的条件留空。也可拖动或直接输入，最左端表示未设置。</p>
+              <p id="needs-hint" class="field-hint">价格按区间核验预算；五项指标以文字描述，未提供具体耗时与配料。</p>
+              <button class="outline-button settings-done" type="submit">完成调整</button>
+            </fieldset>
+          </form>
+        </details>
+      </section>
+    </div>
+    <footer class="sidebar-footer">
+      <button id="personal-data" class="sidebar-link" data-open="history" type="button"><svg class="icon"><use href="#i-history"/></svg>记录与偏好</button>
+      <span class="local-note"><span class="status-dot"></span>本地个人空间</span>
+    </footer>
+  </aside>
+  <main class="chat-main">
+    <header class="chat-header">
+      <button class="icon-button sidebar-toggle" data-panel="left" aria-label="展开用餐条件"><svg class="icon"><use href="#i-users"/></svg></button>
+      <h1>用餐助手 <span class="header-chevron">⌄</span></h1>
+      <span id="ai-status" class="ai-status">正在连接</span>
+      <button class="icon-button recommendations-toggle" data-panel="right" aria-label="展开用餐推荐"><svg class="icon"><use href="#i-bowl"/></svg></button>
+    </header>
+    <div id="chat-scroll" class="chat-scroll empty">
+      <section id="welcome" class="welcome" aria-label="开始对话">
+        <span class="welcome-mark"><svg class="icon"><use href="#i-bowl"/></svg></span>
+        <h2>今天，想<span>吃点什么</span>？</h2>
+        <p id="welcome-description">聊聊你的想法，右侧推荐会一起更新。</p>
+        <div id="chat-suggestions" class="chat-suggestions">
+          <button type="button" data-suggestion="一个人，人均25元，今天吃少一点，不赶时间，帮我选一餐" data-mode="meal"><span>帮我选一餐</span>吃少一点，选哪个食堂？<svg class="icon"><use href="#i-arrow"/></svg></button>
+          <button type="button" data-suggestion="最近总吃一样的，有没有换换口味的思路？" data-mode="chat"><span>随便聊聊</span>今天想换换口味<svg class="icon"><use href="#i-arrow"/></svg></button>
+          <button type="button" data-suggestion="我想聊聊这顿饭的感受" data-mode="feedback"><span>记忆反馈</span>记录这一餐的感受<svg class="icon"><use href="#i-arrow"/></svg></button>
+        </div>
+      </section>
+      <div id="messages" class="messages" role="log" aria-label="与用餐助手的对话" aria-live="polite" aria-relevant="additions"></div>
+    </div>
+    <div class="composer-area">
+      <div id="error-box" class="chat-error" role="alert" hidden><p id="error-text"></p><div class="error-actions"><button id="retry-button" type="button">重试</button><button id="fallback-button" type="button">使用基础规则</button></div></div>
+      <form id="chat-form" class="composer">
+        <div id="menu-context" class="menu-context" hidden><svg class="icon"><use href="#i-menu"/></svg><button id="current-menu" type="button" title="查看或修改识别的菜单"></button><button id="exit-menu" type="button" aria-label="退出当前菜单">×</button></div>
+        <div id="feedback-context" class="feedback-context" hidden><label for="feedback-meal-select">反馈哪一餐</label><select id="feedback-meal-select"></select></div>
+        <label class="sr-only" for="chat-input">输入消息</label>
+        <textarea id="chat-input" rows="2" maxlength="2000" placeholder="随便聊聊，或说说你这顿想怎么吃…"></textarea>
+        <div class="composer-toolbar">
+          <div class="composer-tools">
+            <label class="mode-select-label"><svg id="mode-icon" class="icon"><use href="#i-spark"/></svg><span class="sr-only">选择聊天模式</span><select id="chat-mode"><option value="chat">聊一聊</option><option value="meal">帮我选一餐</option><option value="feedback">记忆反馈</option></select></label>
+            <button id="model-button" class="model-button" type="button" aria-haspopup="dialog" aria-controls="model-dialog" aria-label="选择 LLM 模型"><span id="model-label">GLM-4-Flash</span><span aria-hidden="true">⌄</span></button>
+            <button id="edit-conditions" class="composer-tool" type="button" title="调整用餐条件"><svg class="icon"><use href="#i-users"/></svg><span>条件</span></button>
+            <button id="upload-menu" class="composer-tool menu-upload-button" type="button" aria-label="发送菜单" title="发送菜单图片或文字"><svg class="icon"><use href="#i-menu"/></svg><span>发送菜单</span></button>
+          </div>
+          <button id="send-button" class="send-button" type="submit" aria-label="发送消息"><svg class="icon"><use href="#i-arrow"/></svg></button>
+        </div>
+      </form>
+      <p id="composer-hint" class="composer-hint">按你的常吃食堂统计推荐 · 价格为区间，五项指标以文字描述。</p>
+    </div>
+  </main>
+  <aside id="right-sidebar" class="sidebar right-sidebar" aria-label="用餐推荐">
+    <header class="sidebar-header"><h2>用餐推荐</h2><button class="icon-button mobile-close" data-panel-close aria-label="关闭推荐侧栏"><svg class="icon"><use href="#i-close"/></svg></button><span class="subtle desktop-only">供你参考</span></header>
+    <div class="sidebar-scroll recommendations-scroll">
+      <div class="recommendation-meta"><span id="result-mode">灵感预览 · 基础规则</span><button id="shuffle-button" class="icon-button" type="button" title="换一批" aria-label="换一批推荐"><svg class="icon"><use href="#i-refresh"/></svg></button></div>
+      <input id="option-search" class="text-input option-search" type="search" placeholder="搜索餐厅或餐品…" aria-label="搜索全部可选餐品">
+      <p id="result-notice" class="side-notice" role="status" hidden></p>
+      <div id="recommendation-grid" class="recommendation-grid"></div>
+    </div>
+    <footer id="recommendations-footer" class="recommendations-footer"><svg class="icon"><use href="#i-info"/></svg>来自你的常吃食堂统计</footer>
+  </aside>
+</div>
+<button id="side-backdrop" class="side-backdrop" aria-label="关闭侧栏" hidden></button>
+<dialog id="menu-dialog" class="menu-dialog" aria-labelledby="menu-dialog-title">
+  <div class="dialog-top"><h2 id="menu-dialog-title">发菜单，帮你搭一餐</h2><button class="icon-button" data-close="menu-dialog" type="button" aria-label="关闭发送菜单"><svg class="icon"><use href="#i-close"/></svg></button></div>
+  <div id="menu-entry">
+    <p class="dialog-description">上传菜单照片、截图，或粘贴菜单文字。按本次用餐条件推荐，识别后可直接修改。</p>
+    <div id="saved-menus" class="saved-menus"></div>
+    <form id="menu-import-form">
+      <label id="menu-dropzone" class="menu-dropzone" for="menu-files"><svg class="icon"><use href="#i-menu"/></svg><strong>选择菜单图片</strong><span>也可拖入或粘贴 · JPG / PNG / WebP · 最多 3 张</span></label>
+      <input id="menu-files" class="sr-only" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+      <div id="menu-images" class="menu-images"></div>
+      <div class="field"><label for="menu-text">或粘贴文字菜单</label><textarea id="menu-text" class="text-input" rows="4" maxlength="15000" placeholder="青椒肉丝 22元&#10;清炒时蔬 12元&#10;米饭 2元 / 碗"></textarea></div>
+      <div class="field"><label for="menu-requirements">这次想怎么吃？</label><textarea id="menu-requirements" class="text-input" rows="2" maxlength="2000" placeholder="如：两个人，人均30元，想搭配荤素，不吃辣。留空则按左侧条件推荐。"></textarea></div>
+      <div class="field-pair"><div class="field"><label for="menu-wait">预计等待 / 分钟</label><input id="menu-wait" type="number" min="0" max="120" value="10" required></div><div class="field"><label for="menu-dine">预计用餐 / 分钟</label><input id="menu-dine" type="number" min="1" max="120" value="20" required></div></div>
+      <p class="menu-help">时间为手动估计。缺失价格不补造；有忌口时，仅推荐已核实配料的菜品。</p>
+      <p id="menu-import-error" class="inline-error" role="alert"></p>
+      <button id="menu-import-submit" class="primary-button" type="submit">识别并选菜 <svg class="icon"><use href="#i-spark"/></svg></button>
+    </form>
+  </div>
+  <form id="menu-edit-form" hidden>
+    <p class="dialog-description">可修正识别的菜名和价格。共享菜会组合搭配，套餐按人数分配；未知价格留空。</p>
+    <div class="field"><label for="menu-edit-name">餐厅 / 菜单名称</label><input id="menu-edit-name" maxlength="60" required></div>
+    <div class="field-pair"><div class="field"><label for="menu-edit-wait">预计等待 / 分钟</label><input id="menu-edit-wait" type="number" min="0" max="120" required></div><div class="field"><label for="menu-edit-dine">预计用餐 / 分钟</label><input id="menu-edit-dine" type="number" min="1" max="120" required></div></div>
+    <div id="menu-edit-rows" class="menu-edit-rows"></div>
+    <p id="menu-edit-error" class="inline-error" role="alert"></p>
+    <div class="menu-edit-actions"><button id="menu-edit-save" class="primary-button" type="submit">保存并更新推荐</button><button id="menu-replace" class="text-button" type="button">发送另一份菜单</button><button id="menu-delete" class="text-button" type="button">删除这份菜单</button></div>
+  </form>
+</dialog>
+<dialog id="model-dialog" class="model-dialog" aria-labelledby="model-dialog-title">
+  <div class="dialog-top"><h2 id="model-dialog-title">选择 LLM 模型</h2><button class="icon-button" data-close="model-dialog" type="button" aria-label="关闭模型选择"><svg class="icon"><use href="#i-close"/></svg></button></div>
+  <p class="model-description">用于接下来的聊天、选餐与记忆反馈。</p>
+  <input id="model-search" class="text-input" type="search" placeholder="搜索模型名称…" aria-label="搜索模型">
+  <div class="model-list-heading"><span id="model-list-status" role="status">正在读取账户目录…</span><button id="refresh-models" class="text-button" type="button">刷新</button></div>
+  <div id="model-list" class="model-list" role="group" aria-label="LLM 模型列表"></div>
+  <p id="model-notice" class="model-notice"></p>
+</dialog>
+<dialog id="drawer" class="drawer"><div class="dialog-top"><div><p class="eyebrow">YOUR LITTLE FOOD JOURNAL</p><h2 id="drawer-title">用餐记录</h2></div><button class="icon-button" data-close="drawer" aria-label="关闭记录与偏好"><svg class="icon"><use href="#i-close"/></svg></button></div><div class="drawer-tabs"><button type="button" data-drawer-tab="history">用餐记录</button><button type="button" data-drawer-tab="memories">我的偏好</button></div><div id="drawer-content"></div></dialog>
+<dialog id="detail-dialog" class="detail-dialog"><div class="dialog-top"><div><p class="eyebrow">MAKE IT YOUR MEAL</p><h2 id="detail-title">这一餐的细节</h2></div><button class="icon-button" data-close="detail-dialog" aria-label="关闭菜单"><svg class="icon"><use href="#i-close"/></svg></button></div><div id="detail-content"></div></dialog>
+<dialog id="feedback-dialog" class="feedback-dialog"><div class="dialog-top"><div><p class="eyebrow">HOW WAS YOUR MEAL?</p><h2>这一餐，吃得怎么样？</h2></div><button class="icon-button" data-close="feedback-dialog" aria-label="关闭餐后反馈"><svg class="icon"><use href="#i-close"/></svg></button></div><p id="feedback-meal" class="dialog-description"></p><form id="feedback-form"><div id="rating-fields"></div><div class="field"><label for="actual-wait">实际等待时间 <span class="subtle">分钟</span></label><input id="actual-wait" class="text-input" type="number" min="0" max="240" placeholder="可留空"></div><div class="field"><label for="feedback-note">还有什么想告诉我？</label><textarea id="feedback-note" class="text-input" rows="3" maxlength="500" placeholder="比如：分量很足，但这次有点太咸了…"></textarea></div><p class="learning-hint"><svg class="icon"><use href="#i-leaf"/></svg>反馈可随时修改或撤销，未提到的感受可以留空。</p><p id="feedback-error" class="inline-error" role="alert"></p><button id="save-feedback" class="primary-button" type="submit">保存这次反馈 <svg class="icon"><use href="#i-check"/></svg></button></form></dialog>
+<dialog id="reset-dialog" class="reset-dialog"><div class="dialog-top"><h2>清空本地记录</h2><button class="icon-button" data-close="reset-dialog" aria-label="关闭清空确认"><svg class="icon"><use href="#i-close"/></svg></button></div><p class="dialog-description">将删除用餐记录、餐后反馈、偏好和已上传菜单。请输入“清空本地记录”确认。</p><form id="reset-form"><input id="reset-confirm" class="text-input" required placeholder="清空本地记录" autocomplete="off"><p id="reset-error" class="inline-error" role="alert"></p><button class="danger-button" type="submit">确认清空</button></form></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
